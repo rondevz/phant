@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "skills": {
+    "brainstorming": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "820b77ec19894fbe21981b7e6a939c15978ebd4b113dc45ecbb0dfa544720ca8"
+    },
+    "debug-coach": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "6b04533a0903949affc6d6978b3187b29744735056d4efa7e574bdbf617b9bae"
+    },
+    "executing-plans": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "1fbdeaf83a80b4aca586aaffd947f8b6a1581b40374601f8c0c914fade6f648d"
+    },
+    "interview": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "d2103c5fd1bc76853c6770b3886926bf77f76745375b4e1aecb134c9ae98e53b"
+    },
+    "setup-wizard": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "2b0535c63dc2e0941c25ba0cbb0d1539e178a3009dd7151c3d1a1f99162c97fe"
+    },
+    "subagent-driven-development": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "e0287be92d940386acbfdc3f89c8151707a81a04e54b58268428dda1e8fd3230"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "4365be772fd3b41994a72ad478472c6d680678e7f3859860ab010e9c46e48ee0"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    },
+    "writing-plans": {
+      "source": "vibemastery/toolkit",
+      "sourceType": "github",
+      "computedHash": "4b3128a752d0857407112aa0090ce88296760626aacefb6fcdc4b45670580955"
+    }
+  }
+}

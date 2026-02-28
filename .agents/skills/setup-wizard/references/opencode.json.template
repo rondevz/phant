@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.schema.json",
+  "theme": "opencode",
+  "model": "anthropic/claude-sonnet-4-5",
+  "instructions": "You are helping build a Laravel web application called {{PROJECT_NAME}}. Read AGENTS.md for project structure, conventions, and common commands. When writing PHP, follow Laravel conventions. When writing React, use functional components with hooks. Use Pest for tests.",
+  "autoshare": false,
+  "provider": {
+    "anthropic": {
+      "name": "Anthropic",
+      "env": "ANTHROPIC_API_KEY"
+    }
+  }
+}
