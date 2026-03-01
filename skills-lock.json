@@ -16,6 +16,86 @@
       "sourceType": "github",
       "computedHash": "1fbdeaf83a80b4aca586aaffd947f8b6a1581b40374601f8c0c914fade6f648d"
     },
+    "go-code-review": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "1032087d03a6f51697bd927b4f4bf480ddb89982fcf919c6a541089e9ce1e607"
+    },
+    "go-concurrency": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "6d304569a363a8a6221fdbce54f38f4107f5a7f3982a9416c10803de37264384"
+    },
+    "go-context": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "90f028421ef19a5354cccecb1c4d41e361955dec5230ff97b8ea1f5a1c18140c"
+    },
+    "go-control-flow": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "2cc53da1f906ff235ed94be0c061562f57008f5f4a407b4f991cb78e632d39b0"
+    },
+    "go-data-structures": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "8b46dd4ca3c4802aa7de1d0497535edba230904dfe9df294222d89e94d4b192d"
+    },
+    "go-defensive": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "eeae73802d2969e0956f185809b699ff5afa55f2ff41adb163b8b15a83f3db66"
+    },
+    "go-documentation": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "5a52e6d13e5719b373a47a53975d48c1bbd570f489e7555725a802973e162e01"
+    },
+    "go-error-handling": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "77dfbb28456b8b6452726ede57c4af42251e70844e549de67be566b699f263a3"
+    },
+    "go-functional-options": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "aa768ae78673bac279ad742eb2e728d3f38931340403e8c89ca0e190f1133630"
+    },
+    "go-interfaces": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "f0387256fef8527bef3e3778d54c62b6f8c04515a1b25c7768628a05ecea14ce"
+    },
+    "go-linting": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "41effcb704d0836720d02ff497a8b4b5c76e41491612c22b36f67d87b42d3744"
+    },
+    "go-naming": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "1bb0e4a009afe3673797b9cb910ed5160d615db313ab221ba20c38e3c67e9c9d"
+    },
+    "go-packages": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "c498ff02c6144a544610750607617cfa550c7ed6ddfc1f77478afe368cbaddb5"
+    },
+    "go-performance": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "ad7131a15b124fb070a4c25183f325975e4b01c35e3794e0b741743aa164cd39"
+    },
+    "go-style-core": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "a1137bd5aad517b82f75d6f6ea5540e859fa18784058a7e77550d89f3c494635"
+    },
+    "go-testing": {
+      "source": "cxuu/golang-skills",
+      "sourceType": "github",
+      "computedHash": "5313f27158ada59a570389197277cc09a238bdeaf23937c55b8e8323a8da688f"
+    },
     "interview": {
       "source": "vibemastery/toolkit",
       "sourceType": "github",

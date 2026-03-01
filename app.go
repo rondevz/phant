@@ -3,7 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"phant/internal/dump"
 )
+
+const DumpEventSchemaVersion = dump.SchemaVersion
+
+var ErrUnsupportedSchemaVersion = dump.ErrUnsupportedSchemaVersion
 
 // App struct
 type App struct {
@@ -24,4 +30,12 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) SupportedDumpEventSchemaVersion() int {
+	return dump.SchemaVersion
+}
+
+func (a *App) DecodeDumpEventNDJSONLine(line string) (*dump.Event, error) {
+	return dump.DecodeNDJSONLine(line)
 }
