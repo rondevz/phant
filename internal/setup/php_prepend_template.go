@@ -76,6 +76,61 @@ function phant_http_meta(): ?array {
     ];
 }
 
+function phant_trace_callsite(): array {
+    $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 32);
+
+    foreach ($frames as $frame) {
+        $file = isset($frame['file']) ? (string)$frame['file'] : '';
+        $line = isset($frame['line']) ? (int)$frame['line'] : 0;
+        $function = isset($frame['function']) ? (string)$frame['function'] : '';
+        $class = isset($frame['class']) ? (string)$frame['class'] : '';
+
+        if ($file === '' || $line <= 0) {
+            continue;
+        }
+
+        if ($file === __FILE__) {
+            continue;
+        }
+
+        if (str_contains($file, '/vendor/symfony/var-dumper/')) {
+            continue;
+        }
+
+        if (str_starts_with($function, 'phant_')) {
+            continue;
+        }
+
+        if (str_contains($function, 'phant_install_vardumper_handler')) {
+            continue;
+        }
+
+        if ($function === 'dump' || $function === 'dd') {
+            continue;
+        }
+
+        if ($class === 'Symfony\\Component\\VarDumper\\VarDumper') {
+            continue;
+        }
+
+        $func = $function;
+        if ($func === '' && $class !== '') {
+            $func = $class;
+        }
+        if ($func === '') {
+            $func = '{main}';
+        }
+
+        return [[
+            'file' => $file,
+            'line' => $line,
+            'func' => $func,
+        ]];
+    }
+
+    return [];
+}
+
 function phant_emit_value($var, bool $isDd): void {
     $payload = json_decode(json_encode($var, JSON_PARTIAL_OUTPUT_ON_ERROR), true);
     if ($payload === null && json_last_error() !== JSON_ERROR_NONE) {
@@ -95,7 +150,7 @@ function phant_emit_value($var, bool $isDd): void {
         'isDd' => $isDd,
         'payloadFormat' => 'json',
         'payload' => $payload,
-        'trace' => [],
+        'trace' => phant_trace_callsite(),
         'host' => [
             'hostname' => gethostname() ?: 'unknown',
             'pid' => getmypid() ?: 0,

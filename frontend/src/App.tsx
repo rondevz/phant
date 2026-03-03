@@ -18,6 +18,13 @@ type DumpEvent = {
     projectRoot: string;
     isDd: boolean;
     payload: unknown;
+    trace?: DumpTraceFrame[];
+};
+
+type DumpTraceFrame = {
+    file?: string;
+    line?: number;
+    func?: string;
 };
 
 type CollectorStatus = {
@@ -207,6 +214,19 @@ function DumpsPage({
     events: DumpEvent[];
     onClear: () => void;
 }) {
+    const getCallsiteLabel = (event: DumpEvent): string | null => {
+        const frame = event.trace?.[0];
+        if (!frame?.file || !frame?.line) {
+            return null;
+        }
+
+        if (frame.func) {
+            return `${frame.file}:${frame.line} (${frame.func})`;
+        }
+
+        return `${frame.file}:${frame.line}`;
+    };
+
     return (
         <div className="space-y-4">
             <PageCard
@@ -227,9 +247,20 @@ function DumpsPage({
                     <p className="text-sm text-slate-400">No dumps yet. Trigger `dump()` or `dd()` in Laravel.</p>
                 ) : (
                     <div className="space-y-3">
-                        {events.map((event) => (
-                            <JsonBox key={event.id} value={event} />
-                        ))}
+                        {events.map((event) => {
+                            const callsiteLabel = getCallsiteLabel(event);
+
+                            return (
+                                <div key={event.id} className="space-y-2">
+                                    {callsiteLabel ? (
+                                        <div className="rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300">
+                                            <span className="text-slate-500">Callsite:</span> {callsiteLabel}
+                                        </div>
+                                    ) : null}
+                                    <JsonBox value={event} />
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </PageCard>
