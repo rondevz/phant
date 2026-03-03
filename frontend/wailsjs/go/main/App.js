@@ -5,3 +5,19 @@
 export function Greet(arg1) {
     return window['go']['main']['App']['Greet'](arg1);
 }
+
+export function GetCollectorStatus() {
+    return window['go']['main']['App']['GetCollectorStatus']();
+}
+
+export function GetRecentEvents(arg1) {
+    return window['go']['main']['App']['GetRecentEvents'](arg1);
+}
+
+export function DumpEventChannelName() {
+    return window['go']['main']['App']['DumpEventChannelName']();
+}
+
+export function GetSetupDiagnostics() {
+    return window['go']['main']['App']['GetSetupDiagnostics']();
+}

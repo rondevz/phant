@@ -3,17 +3,35 @@ package main
 import (
 	"context"
 	"fmt"
+	"sync"
 
+	"phant/internal/collector"
 	"phant/internal/dump"
+	"phant/internal/setup"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 const DumpEventSchemaVersion = dump.SchemaVersion
+const DumpEventRuntimeChannel = "phant:dump:event"
 
 var ErrUnsupportedSchemaVersion = dump.ErrUnsupportedSchemaVersion
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx             context.Context
+	collector       *collector.Server
+	collectorStatus CollectorStatus
+	collectorSubID  int
+	collectorDone   chan struct{}
+	collectorWG     sync.WaitGroup
+}
+
+type CollectorStatus struct {
+	Running    bool   `json:"running"`
+	SocketPath string `json:"socketPath"`
+	LastError  string `json:"lastError"`
+	Dropped    uint64 `json:"dropped"`
 }
 
 // NewApp creates a new App application struct
@@ -25,6 +43,38 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	socketPath := collector.DefaultSocketPath()
+	server := collector.NewServer(socketPath, collector.DefaultBufferSize)
+
+	a.collectorStatus = CollectorStatus{
+		Running:    false,
+		SocketPath: socketPath,
+	}
+
+	if err := server.Start(); err != nil {
+		a.collectorStatus.LastError = err.Error()
+		return
+	}
+
+	a.collector = server
+	a.collectorStatus.Running = true
+	a.startCollectorEventBridge()
+}
+
+func (a *App) shutdown(ctx context.Context) {
+	if a.collector == nil {
+		return
+	}
+
+	a.stopCollectorEventBridge()
+
+	if err := a.collector.Stop(); err != nil {
+		a.collectorStatus.LastError = err.Error()
+	}
+
+	a.collectorStatus.Dropped = a.collector.DroppedCount()
+	a.collectorStatus.Running = false
 }
 
 // Greet returns a greeting for the given name
@@ -38,4 +88,71 @@ func (a *App) SupportedDumpEventSchemaVersion() int {
 
 func (a *App) DecodeDumpEventNDJSONLine(line string) (*dump.Event, error) {
 	return dump.DecodeNDJSONLine(line)
+}
+
+func (a *App) GetCollectorStatus() CollectorStatus {
+	if a.collector != nil {
+		a.collectorStatus.Dropped = a.collector.DroppedCount()
+	}
+
+	return a.collectorStatus
+}
+
+func (a *App) GetRecentEvents(limit int) []dump.Event {
+	if a.collector == nil {
+		return []dump.Event{}
+	}
+
+	events := a.collector.Events()
+	if limit <= 0 || limit >= len(events) {
+		return events
+	}
+
+	return events[len(events)-limit:]
+}
+
+func (a *App) DumpEventChannelName() string {
+	return DumpEventRuntimeChannel
+}
+
+func (a *App) GetSetupDiagnostics() setup.Diagnostics {
+	return setup.CollectDiagnostics(context.Background())
+}
+
+func (a *App) startCollectorEventBridge() {
+	if a.collector == nil {
+		return
+	}
+
+	subID, ch := a.collector.Subscribe(256)
+	a.collectorSubID = subID
+	a.collectorDone = make(chan struct{})
+	a.collectorWG.Add(1)
+
+	go func() {
+		defer a.collectorWG.Done()
+
+		for {
+			select {
+			case <-a.collectorDone:
+				return
+			case event, ok := <-ch:
+				if !ok {
+					return
+				}
+				runtime.EventsEmit(a.ctx, DumpEventRuntimeChannel, event)
+			}
+		}
+	}()
+}
+
+func (a *App) stopCollectorEventBridge() {
+	if a.collector == nil || a.collectorDone == nil {
+		return
+	}
+
+	close(a.collectorDone)
+	a.collector.Unsubscribe(a.collectorSubID)
+	a.collectorWG.Wait()
+	a.collectorDone = nil
 }

@@ -17,3 +17,9 @@ to this in your browser, and you can call your Go code from devtools.
 ## Building
 
 To build a redistributable, production mode package, use `wails build`.
+
+## Architecture Docs
+
+- Architecture overview: [docs/architecture/overview.md](docs/architecture/overview.md)
+- Dump schema contract: [docs/specs/dump-event-schema.md](docs/specs/dump-event-schema.md)
+- Implementation plan (history): [docs/plans/2026-02-28-phant-dump-capture-implementation-plan.md](docs/plans/2026-02-28-phant-dump-capture-implementation-plan.md)

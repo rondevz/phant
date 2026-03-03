@@ -1,59 +1,82 @@
-#app {
+.app-shell {
     height: 100vh;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    box-sizing: border-box;
+    text-align: left;
 }
 
-#logo {
-    display: block;
-    width: 50%;
-    height: 50%;
-    margin: auto;
-    padding: 10% 0 0;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    background-origin: content-box;
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.result {
-    height: 20px;
-    line-height: 20px;
-    margin: 1.5rem auto;
+.app-header h1 {
+    margin: 0;
+    font-size: 22px;
 }
 
-.input-box .btn {
-    width: 60px;
-    height: 30px;
-    line-height: 30px;
-    border-radius: 3px;
+.btn {
     border: none;
-    margin: 0 0 0 20px;
-    padding: 0 8px;
+    border-radius: 6px;
+    padding: 8px 12px;
     cursor: pointer;
 }
 
-.input-box .btn:hover {
-    background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
-    color: #333333;
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    font-size: 14px;
 }
 
-.input-box .input {
-    border: none;
-    border-radius: 3px;
-    outline: none;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 10px;
-    background-color: rgba(240, 240, 240, 1);
-    -webkit-font-smoothing: antialiased;
+.diagnostics-grid {
+    margin-top: 4px;
 }
 
-.input-box .input:hover {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
+.diagnostics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.input-box .input:focus {
-    border: none;
-    background-color: rgba(255, 255, 255, 1);
+.events-section {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+}
+
+.events-title {
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.events-list {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.event-item {
+    margin: 0 0 8px;
+    padding: 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.event-item:last-child {
+    margin-bottom: 0;
+}
+
+.empty-state {
+    opacity: 0.9;
 }
