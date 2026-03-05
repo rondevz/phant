@@ -137,6 +137,8 @@ import { ServicesPage } from './pages/ServicesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 function PlaceholderPage({
     title,
@@ -162,11 +164,28 @@ function PlaceholderPage({
     );
 }
 
-function ValueRow({ label, value }: { label: string; value: string }) {
+function ValueRow({ label, value, copyable = false }: { label: string; value: string; copyable?: boolean }) {
+    const handleCopy = () => {
+        if (!copyable || !value || value === 'n/a') return;
+        navigator.clipboard.writeText(value);
+        toast.success('Copied to clipboard', {
+            description: value,
+        });
+    };
+
     return (
-        <div className="flex items-start justify-between gap-4 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
-            <span className="text-muted-foreground">{label}</span>
-            <span className="text-right font-medium text-foreground">{value}</span>
+        <div className="flex items-center justify-between gap-4 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm overflow-hidden">
+            <span className="text-muted-foreground whitespace-nowrap shrink-0">{label}</span>
+            <span 
+                className={cn(
+                    "text-right font-medium text-foreground truncate",
+                    copyable && value !== 'n/a' && "cursor-pointer hover:text-primary hover:underline transition-colors"
+                )} 
+                title={value}
+                onClick={handleCopy}
+            >
+                {value}
+            </span>
         </div>
     );
 }
@@ -256,7 +275,7 @@ function DumpsPage({
                     <ValueRow label="Channel" value={channelName || 'loading...'} />
                     <ValueRow label="Collector" value={status?.running ? 'running' : 'stopped'} />
                     <ValueRow label="Dropped" value={String(status?.dropped ?? 0)} />
-                    <ValueRow label="Socket" value={status?.socketPath || 'n/a'} />
+                    <ValueRow label="Socket" value={status?.socketPath || 'n/a'} copyable />
                     {status?.lastError ? <ValueRow label="Last error" value={status.lastError} /> : null}
                 </div>
             </PageCard>
@@ -334,9 +353,9 @@ function SetupPage({
                     <div className="grid gap-2 md:grid-cols-2">
                         <ValueRow label="Status" value={hookResult.success ? 'enabled' : 'failed'} />
                         <ValueRow label="Message" value={hookResult.message || hookResult.error || 'n/a'} />
-                        <ValueRow label="php.ini" value={hookResult.phpIniPath || 'n/a'} />
-                        <ValueRow label="prepend file" value={hookResult.prependPath || 'n/a'} />
-                        <ValueRow label="backup" value={hookResult.backupPath || 'n/a'} />
+                        <ValueRow label="php.ini" value={hookResult.phpIniPath || 'n/a'} copyable />
+                        <ValueRow label="prepend file" value={hookResult.prependPath || 'n/a'} copyable />
+                        <ValueRow label="backup" value={hookResult.backupPath || 'n/a'} copyable />
                     </div>
                     {hookResult.requiresSudo && hookResult.suggestedCmd ? <JsonBox value={hookResult.suggestedCmd} /> : null}
                 </PageCard>
@@ -403,9 +422,9 @@ function ValetPage({
                     <ValueRow label="Supported OS" value={valetVerification?.supported ? 'yes' : 'no'} />
                     <ValueRow label="Valet detected" value={valetVerification?.valetDetected ? 'yes' : 'no'} />
                     <ValueRow label="Service manager" value={valetVerification?.serviceManager || 'n/a'} />
-                    <ValueRow label="CLI conf.d" value={valetVerification?.cliConfDPath || 'n/a'} />
-                    <ValueRow label="CLI prepend" value={valetVerification?.cliAutoPrepend || 'n/a'} />
-                    <ValueRow label="Expected prepend" value={valetVerification?.expectedPrependPath || 'n/a'} />
+                    <ValueRow label="CLI conf.d" value={valetVerification?.cliConfDPath || 'n/a'} copyable />
+                    <ValueRow label="CLI prepend" value={valetVerification?.cliAutoPrepend || 'n/a'} copyable />
+                    <ValueRow label="Expected prepend" value={valetVerification?.expectedPrependPath || 'n/a'} copyable />
                     {valetVerification?.lastError ? (
                         <ValueRow label="Verification error" value={valetVerification.lastError} />
                     ) : null}

@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import logoUrl from "@/assets/logo.png";
+import { Toaster } from "@/components/ui/sonner";
 
 const navGroups = [
     {
@@ -65,6 +66,7 @@ export function BaseLayout({ children }: { children: ReactNode }) {
                     {children}
                 </div>
             </main>
+            <Toaster />
         </div>
     );
 }
