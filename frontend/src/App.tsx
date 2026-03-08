@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BaseLayout } from './components/layout/BaseLayout';
 import { EventsOffAll, EventsOn } from '../wailsjs/runtime/runtime';
 import {
@@ -32,7 +32,24 @@ import { ValetPage } from './pages/ValetPage';
 
 const MAX_RENDERED_EVENTS = 500;
 
+const isSameCollectorStatus = (
+    previous: CollectorStatus | null,
+    next: CollectorStatus,
+): boolean => {
+    if (previous === null) {
+        return false;
+    }
+
+    return (
+        previous.running === next.running
+        && previous.socketPath === next.socketPath
+        && previous.lastError === next.lastError
+        && previous.dropped === next.dropped
+    );
+};
+
 function App() {
+    const location = useLocation();
     const [events, setEvents] = useState<DumpEvent[]>([]);
     const [channelName, setChannelName] = useState<string>('');
     const [status, setStatus] = useState<CollectorStatus | null>(null);
@@ -47,30 +64,9 @@ function App() {
 
     useEffect(() => {
         let disposed = false;
-        let unsubscribe: (() => void) | null = null;
-
-        EventsOffAll();
-
-        const appendEvent = (event: DumpEvent) => {
-            setEvents((prev) => {
-                if (prev.some((existing) => existing.id === event.id)) {
-                    return prev;
-                }
-
-                const next = [...prev, event];
-                if (next.length <= MAX_RENDERED_EVENTS) {
-                    return next;
-                }
-
-                return next.slice(next.length - MAX_RENDERED_EVENTS);
-            });
-        };
 
         const load = async () => {
-            const [resolvedChannel, collectorStatus, recentEvents, setupDiagnostics, valetStatus] = await Promise.all([
-                DumpEventChannelName(),
-                GetCollectorStatus(),
-                GetRecentEvents(MAX_RENDERED_EVENTS),
+            const [setupDiagnostics, valetStatus] = await Promise.all([
                 GetSetupDiagnostics(),
                 GetValetLinuxVerification(),
             ]);
@@ -79,27 +75,67 @@ function App() {
                 return;
             }
 
-            setChannelName(resolvedChannel);
-            setStatus(collectorStatus);
-            setEvents(recentEvents);
             setDiagnostics(setupDiagnostics);
             setValetVerification(valetStatus);
+        };
+
+        void load();
+
+        return () => {
+            disposed = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (location.pathname !== '/dumps') {
+            EventsOffAll();
+            return;
+        }
+
+        let disposed = false;
+        let unsubscribe: (() => void) | null = null;
+
+        const appendEvent = (event: DumpEvent) => {
+            setEvents((previousEvents) => {
+                if (previousEvents.some((existing) => existing.id === event.id)) {
+                    return previousEvents;
+                }
+
+                const next = [...previousEvents, event];
+                if (next.length <= MAX_RENDERED_EVENTS) {
+                    return next;
+                }
+
+                return next.slice(next.length - MAX_RENDERED_EVENTS);
+            });
+        };
+
+        const loadDumps = async () => {
+            const [resolvedChannel, collectorStatus, recentEvents] = await Promise.all([
+                DumpEventChannelName(),
+                GetCollectorStatus(),
+                GetRecentEvents(MAX_RENDERED_EVENTS),
+            ]);
+
+            if (disposed) {
+                return;
+            }
+
+            setChannelName(resolvedChannel);
+            setStatus((previous) => (isSameCollectorStatus(previous, collectorStatus) ? previous : collectorStatus));
+            setEvents(recentEvents);
 
             unsubscribe = EventsOn(resolvedChannel, (event: DumpEvent) => {
                 appendEvent(event);
             });
         };
 
-        void load();
+        void loadDumps();
 
         const interval = setInterval(() => {
-            if (disposed) {
-                return;
-            }
-
             void GetCollectorStatus().then((nextStatus) => {
                 if (!disposed) {
-                    setStatus(nextStatus);
+                    setStatus((previous) => (isSameCollectorStatus(previous, nextStatus) ? previous : nextStatus));
                 }
             });
         }, 2000);
@@ -115,7 +151,7 @@ function App() {
 
             EventsOffAll();
         };
-    }, []);
+    }, [location.pathname]);
 
     const clearEvents = () => setEvents([]);
     const refreshDiagnostics = () => {

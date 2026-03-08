@@ -1,8 +1,51 @@
+import React from 'react';
 import { ActionButton } from '@/components/ui/action-button';
 import { JsonBox } from '@/components/ui/json-box';
 import { PageCard } from '@/components/ui/page-card';
 import { ValueRow } from '@/components/ui/value-row';
 import type { CollectorStatus, DumpEvent } from '@/types';
+
+const getCallsiteLabel = (event: DumpEvent): string | null => {
+    const frame = event.trace?.[0];
+    if (!frame?.file || !frame?.line) {
+        return null;
+    }
+
+    if (frame.func) {
+        return `${frame.file}:${frame.line} (${frame.func})`;
+    }
+
+    return `${frame.file}:${frame.line}`;
+};
+
+const DumpRow = React.memo(({ event }: { event: DumpEvent }) => {
+    const callsiteLabel = getCallsiteLabel(event);
+
+    return (
+        <div className="space-y-2">
+            {callsiteLabel ? (
+                <div className="rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300">
+                    <span className="text-slate-500">Callsite:</span> {callsiteLabel}
+                </div>
+            ) : null}
+            <JsonBox value={event} />
+        </div>
+    );
+});
+
+const DumpList = React.memo(({ events }: { events: DumpEvent[] }) => {
+    if (events.length === 0) {
+        return <p className="text-sm text-slate-400">No dumps yet. Trigger `dump()` or `dd()` in Laravel.</p>;
+    }
+
+    return (
+        <div className="space-y-3">
+            {events.map((event) => (
+                <DumpRow key={event.id} event={event} />
+            ))}
+        </div>
+    );
+});
 
 export function DumpsPage({
     channelName,
@@ -51,26 +94,7 @@ export function DumpsPage({
             </PageCard>
 
             <PageCard title={`Dumps (${events.length})`}>
-                {events.length === 0 ? (
-                    <p className="text-sm text-slate-400">No dumps yet. Trigger `dump()` or `dd()` in Laravel.</p>
-                ) : (
-                    <div className="space-y-3">
-                        {events.map((event) => {
-                            const callsiteLabel = getCallsiteLabel(event);
-
-                            return (
-                                <div key={event.id} className="space-y-2">
-                                    {callsiteLabel ? (
-                                        <div className="rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300">
-                                            <span className="text-slate-500">Callsite:</span> {callsiteLabel}
-                                        </div>
-                                    ) : null}
-                                    <JsonBox value={event} />
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                <DumpList events={events} />
             </PageCard>
         </div>
     );
