@@ -172,6 +172,285 @@ export class HookInstallResult {
     }
 }
 
+export class PHPActionResult {
+    "success": boolean;
+    "supported": boolean;
+    "version": string;
+    "command": string;
+    "requiresPrivilege": boolean;
+    "suggestedCommands": string[];
+    "message": string;
+    "error": string;
+
+    /** Creates a new PHPActionResult instance. */
+    constructor($$source: Partial<PHPActionResult> = {}) {
+        if (!("success" in $$source)) {
+            this["success"] = false;
+        }
+        if (!("supported" in $$source)) {
+            this["supported"] = false;
+        }
+        if (!("version" in $$source)) {
+            this["version"] = "";
+        }
+        if (!("command" in $$source)) {
+            this["command"] = "";
+        }
+        if (!("requiresPrivilege" in $$source)) {
+            this["requiresPrivilege"] = false;
+        }
+        if (!("suggestedCommands" in $$source)) {
+            this["suggestedCommands"] = [];
+        }
+        if (!("message" in $$source)) {
+            this["message"] = "";
+        }
+        if (!("error" in $$source)) {
+            this["error"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPActionResult instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPActionResult {
+        const $$createField5_0 = $$createType0;
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("suggestedCommands" in $$parsedSource) {
+            $$parsedSource["suggestedCommands"] = $$createField5_0($$parsedSource["suggestedCommands"]);
+        }
+        return new PHPActionResult($$parsedSource as Partial<PHPActionResult>);
+    }
+}
+
+export class PHPExtension {
+    "name": string;
+    "enabled": boolean;
+    "scope": string;
+    "iniPath": string;
+    "iniExists": boolean;
+
+    /** Creates a new PHPExtension instance. */
+    constructor($$source: Partial<PHPExtension> = {}) {
+        if (!("name" in $$source)) {
+            this["name"] = "";
+        }
+        if (!("enabled" in $$source)) {
+            this["enabled"] = false;
+        }
+        if (!("scope" in $$source)) {
+            this["scope"] = "";
+        }
+        if (!("iniPath" in $$source)) {
+            this["iniPath"] = "";
+        }
+        if (!("iniExists" in $$source)) {
+            this["iniExists"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPExtension instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPExtension {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new PHPExtension($$parsedSource as Partial<PHPExtension>);
+    }
+}
+
+export class PHPExtensionToggleRequest {
+    "name": string;
+    "enabled": boolean;
+
+    /** Creates a new PHPExtensionToggleRequest instance. */
+    constructor($$source: Partial<PHPExtensionToggleRequest> = {}) {
+        if (!("name" in $$source)) {
+            this["name"] = "";
+        }
+        if (!("enabled" in $$source)) {
+            this["enabled"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPExtensionToggleRequest instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPExtensionToggleRequest {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new PHPExtensionToggleRequest($$parsedSource as Partial<PHPExtensionToggleRequest>);
+    }
+}
+
+export class PHPIniSettings {
+    "uploadMaxFilesize": string;
+    "postMaxSize": string;
+    "memoryLimit": string;
+    "maxExecutionTime": string;
+
+    /** Creates a new PHPIniSettings instance. */
+    constructor($$source: Partial<PHPIniSettings> = {}) {
+        if (!("uploadMaxFilesize" in $$source)) {
+            this["uploadMaxFilesize"] = "";
+        }
+        if (!("postMaxSize" in $$source)) {
+            this["postMaxSize"] = "";
+        }
+        if (!("memoryLimit" in $$source)) {
+            this["memoryLimit"] = "";
+        }
+        if (!("maxExecutionTime" in $$source)) {
+            this["maxExecutionTime"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPIniSettings instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPIniSettings {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new PHPIniSettings($$parsedSource as Partial<PHPIniSettings>);
+    }
+}
+
+export class PHPIniSettingsUpdateRequest {
+    "uploadMaxFilesize": string;
+    "postMaxSize": string;
+    "memoryLimit": string;
+    "maxExecutionTime": string;
+
+    /** Creates a new PHPIniSettingsUpdateRequest instance. */
+    constructor($$source: Partial<PHPIniSettingsUpdateRequest> = {}) {
+        if (!("uploadMaxFilesize" in $$source)) {
+            this["uploadMaxFilesize"] = "";
+        }
+        if (!("postMaxSize" in $$source)) {
+            this["postMaxSize"] = "";
+        }
+        if (!("memoryLimit" in $$source)) {
+            this["memoryLimit"] = "";
+        }
+        if (!("maxExecutionTime" in $$source)) {
+            this["maxExecutionTime"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPIniSettingsUpdateRequest instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPIniSettingsUpdateRequest {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new PHPIniSettingsUpdateRequest($$parsedSource as Partial<PHPIniSettingsUpdateRequest>);
+    }
+}
+
+export class PHPManagerSnapshot {
+    "generatedAt": string;
+    "supported": boolean;
+    "platform": string;
+    "activeVersion": string;
+    "versions": PHPVersion[];
+    "settings": PHPIniSettings;
+    "extensions": PHPExtension[];
+    "warnings": string[];
+    "lastError": string;
+
+    /** Creates a new PHPManagerSnapshot instance. */
+    constructor($$source: Partial<PHPManagerSnapshot> = {}) {
+        if (!("generatedAt" in $$source)) {
+            this["generatedAt"] = "";
+        }
+        if (!("supported" in $$source)) {
+            this["supported"] = false;
+        }
+        if (!("platform" in $$source)) {
+            this["platform"] = "";
+        }
+        if (!("activeVersion" in $$source)) {
+            this["activeVersion"] = "";
+        }
+        if (!("versions" in $$source)) {
+            this["versions"] = [];
+        }
+        if (!("settings" in $$source)) {
+            this["settings"] = (new PHPIniSettings());
+        }
+        if (!("extensions" in $$source)) {
+            this["extensions"] = [];
+        }
+        if (!("warnings" in $$source)) {
+            this["warnings"] = [];
+        }
+        if (!("lastError" in $$source)) {
+            this["lastError"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPManagerSnapshot instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPManagerSnapshot {
+        const $$createField4_0 = $$createType2;
+        const $$createField5_0 = $$createType3;
+        const $$createField6_0 = $$createType5;
+        const $$createField7_0 = $$createType0;
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        if ("versions" in $$parsedSource) {
+            $$parsedSource["versions"] = $$createField4_0($$parsedSource["versions"]);
+        }
+        if ("settings" in $$parsedSource) {
+            $$parsedSource["settings"] = $$createField5_0($$parsedSource["settings"]);
+        }
+        if ("extensions" in $$parsedSource) {
+            $$parsedSource["extensions"] = $$createField6_0($$parsedSource["extensions"]);
+        }
+        if ("warnings" in $$parsedSource) {
+            $$parsedSource["warnings"] = $$createField7_0($$parsedSource["warnings"]);
+        }
+        return new PHPManagerSnapshot($$parsedSource as Partial<PHPManagerSnapshot>);
+    }
+}
+
+export class PHPVersion {
+    "version": string;
+    "installed": boolean;
+    "active": boolean;
+
+    /** Creates a new PHPVersion instance. */
+    constructor($$source: Partial<PHPVersion> = {}) {
+        if (!("version" in $$source)) {
+            this["version"] = "";
+        }
+        if (!("installed" in $$source)) {
+            this["installed"] = false;
+        }
+        if (!("active" in $$source)) {
+            this["active"] = false;
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new PHPVersion instance from a string or object.
+     */
+    static createFrom($$source: any = {}): PHPVersion {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new PHPVersion($$parsedSource as Partial<PHPVersion>);
+    }
+}
+
 export class ValetLinuxRemediationResult {
     "generatedAt": string;
     "supported": boolean;
@@ -225,7 +504,7 @@ export class ValetLinuxRemediationResult {
      */
     static createFrom($$source: any = {}): ValetLinuxRemediationResult {
         const $$createField6_0 = $$createType0;
-        const $$createField7_0 = $$createType2;
+        const $$createField7_0 = $$createType7;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("suggestedCommands" in $$parsedSource) {
             $$parsedSource["suggestedCommands"] = $$createField6_0($$parsedSource["suggestedCommands"]);
@@ -289,7 +568,7 @@ export class ValetLinuxVerification {
      * Creates a new ValetLinuxVerification instance from a string or object.
      */
     static createFrom($$source: any = {}): ValetLinuxVerification {
-        const $$createField7_0 = $$createType4;
+        const $$createField7_0 = $$createType9;
         const $$createField8_0 = $$createType0;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
         if ("fpmServices" in $$parsedSource) {
@@ -433,7 +712,7 @@ export class ValetSitesResult {
      * Creates a new ValetSitesResult instance from a string or object.
      */
     static createFrom($$source: any = {}): ValetSitesResult {
-        const $$createField4_0 = $$createType6;
+        const $$createField4_0 = $$createType11;
         const $$createField5_0 = $$createType0;
         const $$createField6_0 = $$createType0;
         let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
@@ -452,9 +731,14 @@ export class ValetSitesResult {
 
 // Private type creation functions
 const $$createType0 = $Create.Array($Create.Any);
-const $$createType1 = ValetRemediationTarget.createFrom;
+const $$createType1 = PHPVersion.createFrom;
 const $$createType2 = $Create.Array($$createType1);
-const $$createType3 = FPMServiceStatus.createFrom;
-const $$createType4 = $Create.Array($$createType3);
-const $$createType5 = ValetSite.createFrom;
-const $$createType6 = $Create.Array($$createType5);
+const $$createType3 = PHPIniSettings.createFrom;
+const $$createType4 = PHPExtension.createFrom;
+const $$createType5 = $Create.Array($$createType4);
+const $$createType6 = ValetRemediationTarget.createFrom;
+const $$createType7 = $Create.Array($$createType6);
+const $$createType8 = FPMServiceStatus.createFrom;
+const $$createType9 = $Create.Array($$createType8);
+const $$createType10 = ValetSite.createFrom;
+const $$createType11 = $Create.Array($$createType10);

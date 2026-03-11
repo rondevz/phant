@@ -21,27 +21,59 @@ export function EnableCLIHook(): $CancellablePromise<setup$0.HookInstallResult> 
     });
 }
 
+export function GetPHPManagerSnapshot(): $CancellablePromise<setup$0.PHPManagerSnapshot> {
+    return $Call.ByID(2871005174).then(($result: any) => {
+        return $$createType2($result);
+    });
+}
+
 export function GetSetupDiagnostics(): $CancellablePromise<setup$0.Diagnostics> {
     return $Call.ByID(1874792066).then(($result: any) => {
-        return $$createType2($result);
+        return $$createType3($result);
     });
 }
 
 export function GetValetLinuxVerification(): $CancellablePromise<setup$0.ValetLinuxVerification> {
     return $Call.ByID(4123474282).then(($result: any) => {
-        return $$createType3($result);
+        return $$createType4($result);
     });
 }
 
 export function GetValetSites(): $CancellablePromise<setup$0.ValetSitesResult> {
     return $Call.ByID(3284235411).then(($result: any) => {
-        return $$createType4($result);
+        return $$createType5($result);
+    });
+}
+
+export function InstallPHPVersion(version: string): $CancellablePromise<setup$0.PHPActionResult> {
+    return $Call.ByID(2093846598, version).then(($result: any) => {
+        return $$createType6($result);
+    });
+}
+
+export function SetPHPExtensionState(request: setup$0.PHPExtensionToggleRequest): $CancellablePromise<setup$0.PHPActionResult> {
+    return $Call.ByID(2273922317, request).then(($result: any) => {
+        return $$createType6($result);
+    });
+}
+
+export function SwitchPHPVersion(version: string): $CancellablePromise<setup$0.PHPActionResult> {
+    return $Call.ByID(2047766063, version).then(($result: any) => {
+        return $$createType6($result);
+    });
+}
+
+export function UpdatePHPIniSettings(request: setup$0.PHPIniSettingsUpdateRequest): $CancellablePromise<setup$0.PHPActionResult> {
+    return $Call.ByID(1443795505, request).then(($result: any) => {
+        return $$createType6($result);
     });
 }
 
 // Private type creation functions
 const $$createType0 = setup$0.ValetLinuxRemediationResult.createFrom;
 const $$createType1 = setup$0.HookInstallResult.createFrom;
-const $$createType2 = setup$0.Diagnostics.createFrom;
-const $$createType3 = setup$0.ValetLinuxVerification.createFrom;
-const $$createType4 = setup$0.ValetSitesResult.createFrom;
+const $$createType2 = setup$0.PHPManagerSnapshot.createFrom;
+const $$createType3 = setup$0.Diagnostics.createFrom;
+const $$createType4 = setup$0.ValetLinuxVerification.createFrom;
+const $$createType5 = setup$0.ValetSitesResult.createFrom;
+const $$createType6 = setup$0.PHPActionResult.createFrom;
