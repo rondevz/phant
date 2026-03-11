@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BaseLayout } from './components/layout/BaseLayout';
-import { EventsOffAll, EventsOn } from '../wailsjs/runtime/runtime';
+import { Events } from '@wailsio/runtime';
 import {
-    ApplyValetLinuxRemediation,
     DumpEventChannelName,
     GetCollectorStatus,
-    EnableCLIHook,
     GetRecentEvents,
+} from '../bindings/phant/internal/services/dumpservice';
+import {
+    ApplyValetLinuxRemediation,
+    EnableCLIHook,
     GetSetupDiagnostics,
     GetValetLinuxVerification,
-} from '../wailsjs/go/main/App';
+} from '../bindings/phant/internal/services/setupservice';
 
 import type {
     CollectorStatus,
@@ -88,7 +90,7 @@ function App() {
 
     useEffect(() => {
         if (location.pathname !== '/dumps') {
-            EventsOffAll();
+            Events.OffAll();
             return;
         }
 
@@ -125,8 +127,8 @@ function App() {
             setStatus((previous) => (isSameCollectorStatus(previous, collectorStatus) ? previous : collectorStatus));
             setEvents(recentEvents);
 
-            unsubscribe = EventsOn(resolvedChannel, (event: DumpEvent) => {
-                appendEvent(event);
+            unsubscribe = Events.On(resolvedChannel, (event) => {
+                appendEvent(event.data as DumpEvent);
             });
         };
 
@@ -149,7 +151,7 @@ function App() {
                 unsubscribe = null;
             }
 
-            EventsOffAll();
+            Events.OffAll();
         };
     }, [location.pathname]);
 
