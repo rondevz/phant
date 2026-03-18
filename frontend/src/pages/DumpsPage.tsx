@@ -1,5 +1,8 @@
 import React from 'react';
+import { Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import { ActionButton } from '@/components/ui/action-button';
+import { Button } from '@/components/ui/button';
 import { ValueRow } from '@/components/ui/value-row';
 import {
     Dialog,
@@ -11,17 +14,54 @@ import {
 } from '@/components/ui/dialog';
 import type { CollectorStatus, DumpEvent } from '@/types';
 
-const getCallsiteLabel = (event: DumpEvent): string | null => {
+type CallsiteDetails = {
+    filePath: string;
+    line: number;
+    primary: string;
+    closureContext?: string;
+    functionName?: string;
+};
+
+const shortenPath = (value: string, keepSegments = 3): string => {
+    if (!value) {
+        return value;
+    }
+
+    const normalized = value.replace(/\\/g, '/');
+    const parts = normalized.split('/').filter(Boolean);
+    if (parts.length <= keepSegments) {
+        return normalized;
+    }
+
+    return `.../${parts.slice(parts.length - keepSegments).join('/')}`;
+};
+
+const extractClosureContext = (funcName: string): string | undefined => {
+    const match = funcName.match(/\{closure:([^}]+)\}/);
+    if (!match || !match[1]) {
+        return undefined;
+    }
+
+    return match[1];
+};
+
+const getCallsiteDetails = (event: DumpEvent): CallsiteDetails | null => {
     const frame = event.trace?.[0];
     if (!frame?.file || !frame?.line) {
         return null;
     }
 
-    if (frame.func) {
-        return `${frame.file}:${frame.line} (${frame.func})`;
-    }
+    const shortFile = shortenPath(frame.file, 4);
+    const functionName = frame.func || undefined;
+    const closureContext = functionName ? extractClosureContext(functionName) : undefined;
 
-    return `${frame.file}:${frame.line}`;
+    return {
+        filePath: frame.file,
+        line: frame.line,
+        primary: `${shortFile}:${frame.line}`,
+        closureContext,
+        functionName,
+    };
 };
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> => (
@@ -237,20 +277,45 @@ const DumpPayloadView = React.memo(({ event }: { event: DumpEvent }) => (
 ));
 
 const DumpRow = React.memo(({ event }: { event: DumpEvent }) => {
-    const callsiteLabel = getCallsiteLabel(event);
+    const callsite = getCallsiteDetails(event);
     const occurredAt = new Date(event.timestamp).toLocaleString();
+
+    const handleCopyDump = async () => {
+        try {
+            const payloadText = JSON.stringify(event.payload, null, 2) ?? String(event.payload);
+            const header = callsite
+                ? `${callsite.filePath}:${callsite.line}`
+                : 'unknown-callsite';
+            await navigator.clipboard.writeText(`${header}\n${payloadText}`);
+            toast.success('Dump copied', {
+                description: 'Payload and callsite copied to clipboard.',
+            });
+        } catch (error) {
+            toast.error('Failed to copy dump', {
+                description: 'Clipboard access was denied by the system.',
+            });
+        }
+    };
 
     return (
         <article className="space-y-3 border border-zinc-300 bg-white p-4 cut-corner dark:border-zinc-800 dark:bg-black/80">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-2 font-mono text-[10px] tracking-[0.12em] text-zinc-500 uppercase dark:border-zinc-800 dark:text-zinc-500">
                 <span>{occurredAt}</span>
-                <span className="text-primary">DUMP PAYLOAD INTERCEPTED</span>
-            </div>
-            {callsiteLabel ? (
-                <div className="border-l-4 border-primary/80 bg-primary/5 px-3 py-2 font-mono text-xs text-zinc-600 dark:bg-primary/10 dark:text-zinc-300">
-                    <span className="text-zinc-500 dark:text-zinc-500">Callsite:</span> {callsiteLabel}
+                <div className="flex items-center gap-1">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        className="h-6 w-6"
+                        onClick={handleCopyDump}
+                        title="Copy dump payload"
+                        aria-label="Copy dump payload"
+                    >
+                        <Copy className="size-3" />
+                    </Button>
                 </div>
-            ) : null}
+            </div>
+
             <DumpPayloadView event={event} />
         </article>
     );
@@ -288,7 +353,7 @@ export function DumpsPage({
     onClear: () => void;
 }) {
     const latestEvent = events[events.length - 1];
-    const latestCallsiteLabel = latestEvent ? getCallsiteLabel(latestEvent) : null;
+    const latestCallsite = latestEvent ? getCallsiteDetails(latestEvent) : null;
     const [runtimeOpen, setRuntimeOpen] = React.useState(false);
 
     return (
@@ -298,7 +363,7 @@ export function DumpsPage({
                     DD()
                 </div>
                 <div className="flex items-end justify-between gap-4">
-                    <h1 className="font-rock text-4xl tracking-wide text-foreground uppercase md:text-5xl">Live Dumps</h1>
+                    <h1 className="font-rock text-4xl tracking-wide text-foreground uppercase md:text-5xl">Dumps</h1>
                     <div className="relative z-10 flex items-center gap-2">
                         <ActionButton onClick={() => setRuntimeOpen(true)}>Runtime</ActionButton>
                         <ActionButton onClick={onClear}>Clear Events</ActionButton>
@@ -315,9 +380,20 @@ export function DumpsPage({
                     <span className="font-mono bg-primary px-2 py-0.5 text-[10px] font-bold tracking-[0.14em] text-primary-foreground uppercase">
                         DUMPS_RCVD: {String(events.length).padStart(2, '0')}
                     </span>
-                    <span className="truncate font-mono text-[10px] text-muted-foreground">
-                        {latestCallsiteLabel || 'Waiting for first dump payload...'}
-                    </span>
+                    {latestCallsite ? (
+                        <div className="truncate text-right font-mono text-[10px] text-muted-foreground">
+                            <div title={`${latestCallsite.filePath}:${latestCallsite.line}`}>{latestCallsite.primary}</div>
+                            {latestCallsite.closureContext ? (
+                                <div className="text-primary/80" title={latestCallsite.closureContext}>
+                                    closure: {shortenPath(latestCallsite.closureContext, 3)}
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : (
+                        <span className="truncate font-mono text-[10px] text-muted-foreground">
+                            Waiting for first dump payload...
+                        </span>
+                    )}
                 </header>
 
                 <div className="relative min-h-0 flex-1 overflow-y-auto">
