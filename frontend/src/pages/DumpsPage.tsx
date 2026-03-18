@@ -28,6 +28,71 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => (
     typeof value === 'object' && value !== null && !Array.isArray(value)
 );
 
+type DumpObjectPayload = {
+    __phantType: 'object';
+    __className: string;
+    __objectId: number;
+    __properties: Record<string, unknown>;
+};
+
+type DumpObjectRefPayload = {
+    __phantType: 'object-ref';
+    __className: string;
+    __objectId: number;
+};
+
+type DumpResourcePayload = {
+    __phantType: 'resource';
+    __resourceType: string;
+};
+
+const isDumpObject = (value: unknown): value is DumpObjectPayload => (
+    isPlainObject(value)
+    && value.__phantType === 'object'
+    && typeof value.__className === 'string'
+    && typeof value.__objectId === 'number'
+    && isPlainObject(value.__properties)
+);
+
+const isDumpObjectRef = (value: unknown): value is DumpObjectRefPayload => (
+    isPlainObject(value)
+    && value.__phantType === 'object-ref'
+    && typeof value.__className === 'string'
+    && typeof value.__objectId === 'number'
+);
+
+const isDumpResource = (value: unknown): value is DumpResourcePayload => (
+    isPlainObject(value)
+    && value.__phantType === 'resource'
+    && typeof value.__resourceType === 'string'
+);
+
+const isMaxDepthMarker = (value: unknown): boolean => (
+    isPlainObject(value) && value.__phantType === 'max-depth'
+);
+
+const shouldExpandByDefault = (depth: number, size: number): boolean => {
+    void size;
+    return depth === 0;
+};
+
+const DumpToggle = React.memo(({
+    expanded,
+    onToggle,
+}: {
+    expanded: boolean;
+    onToggle: () => void;
+}) => (
+    <button
+        type="button"
+        onClick={onToggle}
+        className="ml-1 cursor-pointer text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+        aria-label={expanded ? 'Collapse section' : 'Expand section'}
+    >
+        [{expanded ? '▼' : '▶'}]
+    </button>
+));
+
 const renderScalar = (value: unknown): React.ReactNode => {
     if (value === null) {
         return <span className="text-zinc-500 dark:text-zinc-400">null</span>;
@@ -49,65 +114,124 @@ const renderScalar = (value: unknown): React.ReactNode => {
         return <span className="font-bold text-pink-600 dark:text-pink-400">{value ? 'true' : 'false'}</span>;
     }
 
+    if (typeof value === 'bigint') {
+        return <span className="font-bold text-purple-700 dark:text-purple-300">{value.toString()}</span>;
+    }
+
     return <span className="text-zinc-600 dark:text-zinc-400">{String(value)}</span>;
 };
 
-const renderPhpDumpValue = (value: unknown, depth = 0): React.ReactNode => {
-    const indentClass = depth > 0 ? 'ml-4' : '';
+const DumpValueNode = React.memo(({ value, depth = 0 }: { value: unknown; depth?: number }) => {
+    const indentation = depth > 0 ? 'ml-4' : '';
+
+    if (isMaxDepthMarker(value)) {
+        return <span className="text-zinc-500">...</span>;
+    }
+
+    if (isDumpObject(value)) {
+        const properties = Object.entries(value.__properties);
+        const [expanded, setExpanded] = React.useState(shouldExpandByDefault(depth, properties.length));
+
+        return (
+            <>
+                <span className="font-bold text-cyan-700 dark:text-cyan-400">{value.__className}</span>
+                <span className="text-zinc-500"> </span>
+                <span className="text-pink-600 dark:text-pink-400">{`{#${value.__objectId}`}</span>
+                <DumpToggle expanded={expanded} onToggle={() => setExpanded((previous) => !previous)} />
+                {expanded ? (
+                    <>
+                        {properties.map(([propertyName, nested]) => (
+                            <div key={`${depth}-${propertyName}`} className="ml-4">
+                                <span className="text-zinc-500">{propertyName}</span>
+                                <span className="text-zinc-500">: </span>
+                                <DumpValueNode value={nested} depth={depth + 1} />
+                            </div>
+                        ))}
+                        <div className={indentation}>
+                            <span className="text-zinc-500">{`}`}</span>
+                        </div>
+                    </>
+                ) : (
+                    <span className="text-zinc-500">{`}`}</span>
+                )}
+            </>
+        );
+    }
+
+    if (isDumpObjectRef(value)) {
+        return (
+            <>
+                <span className="font-bold text-cyan-700 dark:text-cyan-400">{value.__className}</span>
+                <span className="text-zinc-500"> </span>
+                <span className="text-pink-600 dark:text-pink-400">{`{#${value.__objectId}`}</span>
+                <span className="text-zinc-500"> *RECURSION* </span>
+                <span className="text-zinc-500">{`}`}</span>
+            </>
+        );
+    }
+
+    if (isDumpResource(value)) {
+        return <span className="text-zinc-500">resource({value.__resourceType})</span>;
+    }
 
     if (Array.isArray(value)) {
+        const [expanded, setExpanded] = React.useState(shouldExpandByDefault(depth, value.length));
+
         return (
             <>
                 <span className="font-bold text-cyan-700 dark:text-cyan-400">array:{value.length}</span>
-                <span className="text-zinc-500">[</span>
-                <span className="text-zinc-500">▼</span>
-                {value.map((item, index) => (
-                    <div key={`arr-${depth}-${index}`} className="ml-4">
-                        <span className="text-emerald-700 dark:text-emerald-400">&quot;{index}&quot;</span>
-                        <span className="text-zinc-500"> =&gt; </span>
-                        {isPlainObject(item) || Array.isArray(item)
-                            ? renderPhpDumpValue(item, depth + 1)
-                            : renderScalar(item)}
-                    </div>
-                ))}
-                <div className={indentClass}>
-                    <span className="text-zinc-500">]</span>
-                </div>
+                <DumpToggle expanded={expanded} onToggle={() => setExpanded((previous) => !previous)} />
+                {expanded ? (
+                    <>
+                        {value.map((item, index) => (
+                            <div key={`arr-${depth}-${index}`} className="ml-4">
+                                <span className="text-emerald-700 dark:text-emerald-400">&quot;{index}&quot;</span>
+                                <span className="text-zinc-500"> =&gt; </span>
+                                <DumpValueNode value={item} depth={depth + 1} />
+                            </div>
+                        ))}
+                        <div className={indentation}>
+                            <span className="text-zinc-500">]</span>
+                        </div>
+                    </>
+                ) : null}
             </>
         );
     }
 
     if (isPlainObject(value)) {
         const entries = Object.entries(value);
+        const [expanded, setExpanded] = React.useState(shouldExpandByDefault(depth, entries.length));
 
         return (
             <>
                 <span className="font-bold text-cyan-700 dark:text-cyan-400">array:{entries.length}</span>
-                <span className="text-zinc-500">[</span>
-                <span className="text-zinc-500">▼</span>
-                {entries.map(([key, nested]) => (
-                    <div key={`${depth}-${key}`} className="ml-4">
-                        <span className="text-emerald-700 dark:text-emerald-400">&quot;{key}&quot;</span>
-                        <span className="text-zinc-500"> =&gt; </span>
-                        {isPlainObject(nested) || Array.isArray(nested)
-                            ? renderPhpDumpValue(nested, depth + 1)
-                            : renderScalar(nested)}
-                    </div>
-                ))}
-                <div className={indentClass}>
-                    <span className="text-zinc-500">]</span>
-                </div>
+                <DumpToggle expanded={expanded} onToggle={() => setExpanded((previous) => !previous)} />
+                {expanded ? (
+                    <>
+                        {entries.map(([key, nested]) => (
+                            <div key={`${depth}-${key}`} className="ml-4">
+                                <span className="text-emerald-700 dark:text-emerald-400">&quot;{key}&quot;</span>
+                                <span className="text-zinc-500"> =&gt; </span>
+                                <DumpValueNode value={nested} depth={depth + 1} />
+                            </div>
+                        ))}
+                        <div className={indentation}>
+                            <span className="text-zinc-500">]</span>
+                        </div>
+                    </>
+                ) : null}
             </>
         );
     }
 
     return renderScalar(value);
-};
+});
 
 const DumpPayloadView = React.memo(({ event }: { event: DumpEvent }) => (
     <div className="border border-zinc-200 bg-white p-3 text-sm leading-relaxed dark:border-zinc-800 dark:bg-black">
         <div className="overflow-x-auto font-mono text-[13px]">
-            {renderPhpDumpValue(event.payload)}
+            <DumpValueNode value={event.payload} />
         </div>
     </div>
 ));

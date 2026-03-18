@@ -131,9 +131,77 @@ function phant_trace_callsite(): array {
     return [];
 }
 
+function phant_normalize_property_name(string $rawKey, string $className): string {
+    if (str_starts_with($rawKey, "\0*\0")) {
+        return '#' . substr($rawKey, 3);
+    }
+
+    $privatePrefix = "\0" . $className . "\0";
+    if (str_starts_with($rawKey, $privatePrefix)) {
+        return '-' . substr($rawKey, strlen($privatePrefix));
+    }
+
+    return '+' . $rawKey;
+}
+
+function phant_normalize_value($value, int $depth = 0, array &$seen = []) {
+    if ($depth > 10) {
+        return ['__phantType' => 'max-depth'];
+    }
+
+    if (is_array($value)) {
+        $result = [];
+        foreach ($value as $key => $nested) {
+            $result[$key] = phant_normalize_value($nested, $depth + 1, $seen);
+        }
+
+        return $result;
+    }
+
+    if (is_object($value)) {
+        $className = get_class($value);
+        $objectID = spl_object_id($value);
+
+        if (isset($seen[$objectID])) {
+            return [
+                '__phantType' => 'object-ref',
+                '__className' => $className,
+                '__objectId' => $objectID,
+            ];
+        }
+
+        $seen[$objectID] = true;
+
+        $properties = [];
+        foreach ((array)$value as $rawKey => $nested) {
+            $propertyName = phant_normalize_property_name((string)$rawKey, $className);
+            $properties[$propertyName] = phant_normalize_value($nested, $depth + 1, $seen);
+        }
+
+        return [
+            '__phantType' => 'object',
+            '__className' => $className,
+            '__objectId' => $objectID,
+            '__properties' => $properties,
+        ];
+    }
+
+    if (is_resource($value) || (function_exists('is_resource_type') && is_resource_type($value))) {
+        return [
+            '__phantType' => 'resource',
+            '__resourceType' => get_resource_type($value),
+        ];
+    }
+
+    return $value;
+}
+
 function phant_emit_value($var, bool $isDd): void {
-    $payload = json_decode(json_encode($var, JSON_PARTIAL_OUTPUT_ON_ERROR), true);
-    if ($payload === null && json_last_error() !== JSON_ERROR_NONE) {
+    $seen = [];
+    $payload = phant_normalize_value($var, 0, $seen);
+
+    $payloadProbe = json_encode($payload, JSON_PARTIAL_OUTPUT_ON_ERROR);
+    if ($payloadProbe === false) {
         $payload = ['string' => (string)$var];
     }
 
